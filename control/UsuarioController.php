@@ -137,12 +137,43 @@ $objUsuario = new UsuarioModel();
 
 // ver cliente
 if ($tipo == "ver_clientes") {
-    $respuesta = array('status' => false, 'msg' => 'fallo el controlador');
     $usuarios = $objPersona->verClientes();
-    if (count($usuarios)) {
-        $respuesta = array('status' => true, 'msg' => '', 'data' => $usuarios);
+    // Normalizar roles numéricos -> 'cliente'
+    foreach ($usuarios as $k => $u) {
+        if (isset($u->rol) && preg_match('/^\d+$/', $u->rol)) {
+            $usuarios[$k]->rol = 'cliente';
+        }
     }
+    if (count($usuarios) > 0) {
+        $respuesta = array('status' => true, 'msg' => '', 'data' => $usuarios);
+    } else {
+        $respuesta = array('status' => false, 'msg' => 'No hay clientes registrados', 'data' => []);
+    }
+    header('Content-Type: application/json');
     echo json_encode($respuesta);
+}
+// Buscar cliente por DNI (utilizado en pantalla de ventas)
+if ($tipo == 'buscar_por_dni') {
+   header('Content-Type: application/json');
+   $dni = $_POST['dni'] ?? '';
+   $respuesta = ['status' => false, 'msg' => 'No encontrado'];
+   if ($dni != '') {
+      $persona = $objPersona->buscarPersonaPorNroIdentidad($dni);
+      if ($persona) {
+         // Verificar que la persona sea un cliente
+         if (isset($persona->rol) && $persona->rol == 'cliente') {
+             $respuesta = ['status' => true, 'data' => ['id' => $persona->id, 'razon_social' => $persona->razon_social]];
+         } else {
+             $respuesta = ['status' => false, 'msg' => 'El documento no corresponde a un cliente'];
+         }
+      } else {
+         $respuesta = ['status' => false, 'msg' => 'Cliente no encontrado'];
+      }
+   } else {
+      $respuesta = ['status' => false, 'msg' => 'DNI vacío'];
+   }
+   echo json_encode($respuesta);
+   exit;
 }
 // ver proveeddor detallado
 

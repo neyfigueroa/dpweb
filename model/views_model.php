@@ -6,7 +6,7 @@ class viewModel{
     protected static function get_view($view){
     // Lista blanca de vistas permitidas
     // Solo estas vistas se pueden acceder directamente si existen en la carpeta /view
-        $white_list = ["home", "products", "users", "new-user", "categories", "update", "edit-producto", "edit-categoria", "categoria", "produc", "new-cliente", "new-proveedor", "proveedor", "cliente", "edit-client", "edit-proveedor"];
+        $white_list = ["home", "products", "users","venta", "new-user", "categories", "update", "edit-producto", "edit-categoria", "categoria", "produc", "new-cliente", "new-proveedor", "proveedor", "cliente", "edit-client", "edit-proveedor", "producto-lista"];
             // Si la vista está en la lista blanca
         if (in_array($view, $white_list)) {
             // Verifica si el archivo PHP de la vista realmente existe en la carpeta /view

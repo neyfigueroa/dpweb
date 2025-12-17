@@ -21,9 +21,10 @@
             <th><i class="bi bi-info-circle"></i> Detalle</th>
             <th><i class="bi bi-cash"></i> Precio</th>
             <th><i class="bi bi-boxes"></i> Stock</th>
-            <th><i>imagen</i></th>
+            <th><i class="bi bi-image"></i> Imagen</th>
             <th><i class="bi bi-calendar-x"></i> Vencimiento</th>
             <th><i class="bi bi-tags"></i> Categoría</th>
+            <th><i class="bi bi-upc-scan"></i> Código de Barra</th>
             <th><i class="bi bi-gear"></i> Acciones</th>
            
         </tr>
@@ -34,4 +35,10 @@
 </table>
 </div>
 <script src="<?= BASE_URL ?>view/function/products.js"></script>
+<script src="<?= BASE_URL ?>view/function/JsBarcode.all.min.js"></script>
+<script>
+    if (document.getElementById('content_productos')) {
+        cargarProductosLista();
+    }
+</script>
 <!--script>view_users();</script-->

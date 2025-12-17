@@ -71,7 +71,7 @@
                             <div class="mb-3">
                                 <label for="rol" class="form-label"><i class="bi bi-shield-check"></i> Rol:</label>
                                 <select class="form-control" name="rol" id="rol" required readonly>
-                                    <option value="3" selected>Proveedor</option>
+                                    <option value="proveedor" selected>Proveedor</option>
                                 </select>
                             </div>
                         </div>

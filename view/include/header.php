@@ -213,6 +213,11 @@
                             <i class="bi bi-truck"></i> Proveedores
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= BASE_URL ?>venta">
+                            <i class="bi bi-truck"></i> venta
+                        </a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
