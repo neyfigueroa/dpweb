@@ -163,16 +163,27 @@ async function actualizarProducto() {
       }
     );
 
-    let json = await respuesta.json();
+    if (!respuesta.ok) {
+      throw new Error(`Error del servidor: ${respuesta.status} ${respuesta.statusText}`);
+    }
+
+    let json;
+    try {
+      json = await respuesta.json();
+    } catch (parseError) {
+      console.error("Error al parsear JSON:", parseError);
+      throw new Error("Respuesta del servidor no es válida");
+    }
+
     console.log("Respuesta de actualización:", json);
     if (json.status) {
       Swal.fire({
         title: json.msg,
         icon: "success",
         draggable: true,
+      }).then(() => {
+        location.href = base_url + "produc"; // Redirige después de cerrar el alert
       });
-      location.href = base_url + "produc"; // Redirige si deseas
-      view_productos();
     } else {
       Swal.fire({
         title: json.msg,
@@ -183,9 +194,10 @@ async function actualizarProducto() {
   } catch (e) {
     console.error("Error al actualizar producto:", e);
     Swal.fire({
-      title: "Error",
-      text: "Error al actualizar: " + e.message,
+      title: "Error al actualizar producto",
+      text: e.message || "Ocurrió un error inesperado. Verifica los datos e intenta nuevamente.",
       icon: "error",
+      draggable: true,
     });
   }
 }
@@ -344,6 +356,10 @@ async function eliminarProducto(id) {
     }
   });
 }
+
+function editarProducto(id) {
+  window.location.href = base_url + "edit-producto/" + id;
+}
 // cargar categoria
 async function cargarCategorias() {
   let r = await fetch(
@@ -439,77 +455,77 @@ async function cargarProductosTienda() {
   }
 }
 
-if (document.getElementById("contenedor_productos")) {
-  // Función para cargar productos en la lista de productos (produc.php)
-  async function cargarProductosLista() {
-    try {
-      const respuesta = await fetch(
-        base_url + "control/ProductoController.php?tipo=ver_productos",
-        {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-        }
-      );
-
-      const productos = await respuesta.json();
-      let html = "";
-
-      if (productos.data && productos.data.length > 0) {
-        productos.data.forEach((p) => {
-          const imagen = p.imagen
-            ? base_url + p.imagen.replace("../", "")
-            : "https://via.placeholder.com/50x50?text=Sin+Imagen";
-          const barcodeId = "barcode-" + p.id;
-
-          html += `
-                <tr>
-                    <td>${p.id}</td>
-                    <td>${p.codigo}</td>
-                    <td>${p.nombre}</td>
-                    <td>${p.detalle}</td>
-                    <td>$${parseFloat(p.precio).toFixed(2)}</td>
-                    <td>${p.stock}</td>
-                    <td><img src="${imagen}" alt="${
-            p.nombre
-          }" width="50" height="50"></td>
-                    <td>${p.fecha_vencimiento}</td>
-                    <td>${p.categoria}</td>
-                    <td><svg id="${barcodeId}"></svg></td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editarProducto(${
-                          p.id
-                        })"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${
-                          p.id
-                        })"><i class="bi bi-trash"></i></button>
-                    </td>
-                </tr>`;
-        });
-      } else {
-        html =
-          '<tr><td colspan="11" class="text-center">No hay productos disponibles</td></tr>';
+// Función para cargar productos en la lista de productos (produc.php)
+async function cargarProductosLista() {
+  try {
+    const respuesta = await fetch(
+      base_url + "control/ProductoController.php?tipo=ver_productos",
+      {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
       }
+    );
 
-      document.getElementById("content_productos").innerHTML = html;
+    const productos = await respuesta.json();
+    let html = "";
 
-      // Generar códigos de barras después de cargar la tabla
+    if (productos.data && productos.data.length > 0) {
       productos.data.forEach((p) => {
+        const imagen = p.imagen
+          ? base_url + p.imagen.replace("../", "")
+          : "https://via.placeholder.com/50x50?text=Sin+Imagen";
         const barcodeId = "barcode-" + p.id;
-        JsBarcode("#" + barcodeId, p.codigo, {
-          format: "CODE128",
-          width: 1,
-          height: 30,
-          displayValue: false,
-        });
-      });
-    } catch (error) {
-      console.error("Error al cargar productos:", error);
-      document.getElementById("content_productos").innerHTML =
-        '<tr><td colspan="11" class="text-center text-danger">Error al cargar productos</td></tr>';
-    }
-  }
 
+        html += `
+              <tr>
+                  <td>${p.id}</td>
+                  <td>${p.codigo}</td>
+                  <td>${p.nombre}</td>
+                  <td>${p.detalle}</td>
+                  <td>$${parseFloat(p.precio).toFixed(2)}</td>
+                  <td>${p.stock}</td>
+                  <td><img src="${imagen}" alt="${
+          p.nombre
+        }" width="50" height="50"></td>
+                  <td>${p.fecha_vencimiento}</td>
+                  <td>${p.categoria}</td>
+                  <td><svg id="${barcodeId}"></svg></td>
+                  <td>
+                      <button class="btn btn-warning btn-sm" onclick="editarProducto(${
+                        p.id
+                      })"><i class="bi bi-pencil"></i></button>
+                      <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${
+                        p.id
+                      })"><i class="bi bi-trash"></i></button>
+                  </td>
+              </tr>`;
+      });
+    } else {
+      html =
+        '<tr><td colspan="11" class="text-center">No hay productos disponibles</td></tr>';
+    }
+
+    document.getElementById("content_productos").innerHTML = html;
+
+    // Generar códigos de barras después de cargar la tabla
+    productos.data.forEach((p) => {
+      const barcodeId = "barcode-" + p.id;
+      JsBarcode("#" + barcodeId, p.codigo, {
+        format: "CODE128",
+        width: 1,
+        height: 30,
+        displayValue: false,
+      });
+    });
+  } catch (error) {
+    console.error("Error al cargar productos:", error);
+    document.getElementById("content_productos").innerHTML =
+      '<tr><td colspan="11" class="text-center text-danger">Error al cargar productos</td></tr>';
+  }
+}
+
+if (document.getElementById("contenedor_productos")) {
   cargarProductosTienda();
 }
 

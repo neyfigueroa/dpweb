@@ -134,13 +134,15 @@ class ProductoModel
         $codigo = isset($data['codigo']) ? $data['codigo'] : null;
         $nombre = isset($data['nombre']) ? $data['nombre'] : null;
         $detalle = isset($data['detalle']) ? $data['detalle'] : null;
-        $precio = isset($data['precio']) ? $data['precio'] : null;
+        $precio = isset($data['precio']) ? (float)$data['precio'] : null;
         $stock = isset($data['stock']) ? (int)$data['stock'] : null;
         $fecha_vencimiento = isset($data['fecha_vencimiento']) ? $data['fecha_vencimiento'] : null;
         $imagen = isset($data['imagen']) ? $data['imagen'] : null;
         $id_categoria = (isset($data['id_categoria']) && $data['id_categoria'] !== '') ? (int)$data['id_categoria'] : null;
         $id_proveedor = (isset($data['id_proveedor']) && $data['id_proveedor'] !== '') ? (int)$data['id_proveedor'] : null;
         $id_producto = isset($data['id_producto']) ? (int)$data['id_producto'] : null;
+
+        error_log("Variables preparadas: codigo=$codigo, nombre=$nombre, detalle=$detalle, precio=$precio, stock=$stock, fecha_vencimiento=$fecha_vencimiento, imagen=$imagen, id_categoria=$id_categoria, id_proveedor=$id_proveedor, id_producto=$id_producto");
 
         // Usar la columna correcta 'proveedor' en el UPDATE
         $stmt = $this->conexion->prepare("UPDATE producto SET codigo = ?, nombre = ?, detalle = ?, precio = ?, stock = ?, fecha_vencimiento = ?, imagen = ?, id_categoria = ?, proveedor = ? WHERE id = ?");
@@ -150,7 +152,7 @@ class ProductoModel
         }
 
         // Tipos: s = string, d = double, i = integer
-        $stmt->bind_param(
+        $bind_result = $stmt->bind_param(
             "sssdissiii",
             $codigo,
             $nombre,
@@ -163,10 +165,17 @@ class ProductoModel
             $id_proveedor,
             $id_producto
         );
+        if ($bind_result === false) {
+            error_log("Error en bind_param: " . $stmt->error);
+            $stmt->close();
+            return false;
+        }
 
         $resultado = $stmt->execute();
         if ($resultado === false) {
             error_log("Error al ejecutar la consulta: " . $stmt->error);
+        } else {
+            error_log("Consulta ejecutada correctamente");
         }
         $stmt->close();
         return $resultado;
