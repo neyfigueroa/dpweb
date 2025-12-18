@@ -1,6 +1,6 @@
 
 <?php
-require_once("../model/VentaModel.php");
+require_once("../model/ventaModel.php");
 require_once("../model/ProductoModel.php");
 
 $objProducto = new ProductoModel();
