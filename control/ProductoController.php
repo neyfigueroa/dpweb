@@ -74,7 +74,7 @@ if ($tipo == 'registrar') {
     // Asignar nombre único a la imagen
     $nombreUnico = uniqid('prod_') . '.' . $ext;
     $rutaFisica = $carpetaUploads . $nombreUnico;
-    $rutaRelativa = "Uploads/productos/" . $nombreUnico;
+    $rutaRelativa = "uploads/productos/" . $nombreUnico;
 
     // Mover archivo al servidor
     if (!move_uploaded_file($file['tmp_name'], $rutaFisica)) {
@@ -187,7 +187,7 @@ if ($tipo == "actualizar_producto") {
 
         $nombreUnico = uniqid('prod_') . '.' . $ext;
         $rutaFisica = $target_dir . $nombreUnico;
-        $data['imagen'] = "Uploads/productos/" . $nombreUnico;
+        $data['imagen'] = "uploads/productos/" . $nombreUnico;
 
         if (!move_uploaded_file($_FILES["imagen"]["tmp_name"], $rutaFisica)) {
             echo json_encode(['status' => false, 'msg' => 'No se pudo guardar la imagen']);
