@@ -20,11 +20,19 @@ if ($tipo == "registrarTemporal"){
     if ($b_producto) {
         // sumar la cantidad enviada (por si se agrega más de 1)
         $r_cantidad = intval($b_producto->cantidad) + intval($cantidad);
-        $objVenta->actualizarCantidadTemporal($id_producto, $r_cantidad);
-        $respuesta = array('status' => true, 'msg' => 'Actualizado con éxito');
+        $ok = $objVenta->actualizarCantidadTemporal($id_producto, $r_cantidad);
+        if ($ok) {
+            $respuesta = array('status' => true, 'msg' => 'Actualizado con éxito');
+        } else {
+            $respuesta = array('status' => false, 'msg' => 'Error al actualizar temporal', 'error' => $objVenta->lastError);
+        }
     } else {
-        $objVenta->registrar_temporal($id_producto, $precio, $cantidad);
-        $respuesta = array('status' => true, 'msg' => 'registrado');
+        $id = $objVenta->registrar_temporal($id_producto, $precio, $cantidad);
+        if ($id > 0) {
+            $respuesta = array('status' => true, 'msg' => 'registrado');
+        } else {
+            $respuesta = array('status' => false, 'msg' => 'Error al registrar temporal', 'error' => $objVenta->lastError);
+        }
     }
     echo json_encode($respuesta);
 }
@@ -87,13 +95,18 @@ if ($tipo == "registrar_venta") {
         //Registrar los detalles de la venta
         $temporales = $objVenta->buscarTemporales();
         foreach ($temporales as $temporal) {
-            $objVenta->registrar_detalle_venta($venta, $temporal->id_producto, $temporal->precio, $temporal->cantidad);
+            $ok = $objVenta->registrar_detalle_venta($venta, $temporal->id_producto, $temporal->precio, $temporal->cantidad);
+            if (!$ok) {
+                $respuesta = array('status' => false, 'msg' => 'error al registrar detalle', 'error' => $objVenta->lastError);
+                echo json_encode($respuesta);
+                exit;
+            }
         }
         //Eliminar los temporales
         $objVenta->eliminarTemporales();
         $respuesta = array('status' => true, 'msg' => 'venta registrada con exito');
     } else {
-        $respuesta = array('status' => false, 'msg' => 'error al registrar la venta');
+        $respuesta = array('status' => false, 'msg' => 'error al registrar la venta', 'error' => $objVenta->lastError);
     }
     echo json_encode($respuesta);
 }

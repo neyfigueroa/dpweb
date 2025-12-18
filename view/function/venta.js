@@ -32,6 +32,12 @@ async function agregar_producto_temporal(id_product = 0, price = 0, cant = 1) {
         body: datos,
       }
     );
+    if (!respuesta.ok) {
+      const text = await respuesta.text();
+      console.error('Server error registrarTemporal:', text);
+      alert('Error del servidor al agregar producto');
+      return;
+    }
     const json = await respuesta.json();
     if (json.status) {
       if (json.msg == "registrado") {
@@ -281,6 +287,12 @@ async function registrarVenta() {
         body: datos,
       }
     );
+    if (!respuesta.ok) {
+      const text = await respuesta.text();
+      console.error('Server error registrar_venta:', text);
+      alert('Error del servidor al registrar la venta');
+      return;
+    }
     const json = await respuesta.json();
     if (json.status) {
       alert("venta registrada con exito");
