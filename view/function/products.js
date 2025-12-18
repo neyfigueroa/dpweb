@@ -42,7 +42,7 @@ function validar_form() {
       icon: "error",
     });
     return;
-  }
+                      <td><img src="${base_url}${producto.imagen ? producto.imagen.replace("../", "") + '?v=' + Date.now() : 'view/img/default.jpg'}" alt="Imagen del producto" width="50" height="50" style="object-fit: cover;"></td>
 
   // Validaciones adicionales
   if (parseFloat(precio) < 0) {
@@ -126,7 +126,7 @@ async function registrarProducto() {
   } catch (e) {
     console.error("Error al registrar producto:", e);
     Swal.fire({
-      title: "Error",
+                        <td><img src="${p.imagen ? base_url + p.imagen.replace("../", "") + '?v=' + Date.now() : 'https://via.placeholder.com/50x50?text=Sin+Imagen'}" alt="${p.nombre}" width="50" height="50"></td>
       text: "Error al registrar: " + e.message,
       icon: "error",
     });
@@ -344,6 +344,11 @@ async function eliminarProducto(id) {
     }
   });
 }
+// Redirige a la página de edición para un producto
+function editarProducto(id) {
+  if (!id) return;
+  window.location.href = base_url + 'edit-producto/' + id;
+}
 // cargar categoria
 async function cargarCategorias() {
   let r = await fetch(
@@ -439,30 +444,29 @@ async function cargarProductosTienda() {
   }
 }
 
-if (document.getElementById("contenedor_productos")) {
-  // Función para cargar productos en la lista de productos (produc.php)
-  async function cargarProductosLista() {
-    try {
-      const respuesta = await fetch(
-        base_url + "control/ProductoController.php?tipo=ver_productos",
-        {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-        }
-      );
+// Función para cargar productos en la lista de productos (produc.php)
+async function cargarProductosLista() {
+  try {
+    const respuesta = await fetch(
+      base_url + "control/ProductoController.php?tipo=ver_productos",
+      {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+      }
+    );
 
-      const productos = await respuesta.json();
-      let html = "";
+    const productos = await respuesta.json();
+    let html = "";
 
-      if (productos.data && productos.data.length > 0) {
-        productos.data.forEach((p) => {
-          const imagen = p.imagen
-            ? base_url + p.imagen.replace("../", "")
-            : "https://via.placeholder.com/50x50?text=Sin+Imagen";
-          const barcodeId = "barcode-" + p.id;
+    if (productos.data && productos.data.length > 0) {
+      productos.data.forEach((p) => {
+        const imagen = p.imagen
+          ? base_url + p.imagen.replace("../", "")
+          : "https://via.placeholder.com/50x50?text=Sin+Imagen";
+        const barcodeId = "barcode-" + p.id;
 
-          html += `
+        html += `
                 <tr>
                     <td>${p.id}</td>
                     <td>${p.codigo}</td>
@@ -470,46 +474,50 @@ if (document.getElementById("contenedor_productos")) {
                     <td>${p.detalle}</td>
                     <td>$${parseFloat(p.precio).toFixed(2)}</td>
                     <td>${p.stock}</td>
-                    <td><img src="${imagen}" alt="${
-            p.nombre
-          }" width="50" height="50"></td>
+                    <td><img src="${imagen}" alt="${p.nombre}" width="50" height="50"></td>
                     <td>${p.fecha_vencimiento}</td>
                     <td>${p.categoria}</td>
                     <td><svg id="${barcodeId}"></svg></td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editarProducto(${
-                          p.id
-                        })"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${
-                          p.id
-                        })"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-warning btn-sm" onclick="editarProducto(${p.id})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${p.id})"><i class="bi bi-trash"></i></button>
                     </td>
                 </tr>`;
-        });
-      } else {
-        html =
-          '<tr><td colspan="11" class="text-center">No hay productos disponibles</td></tr>';
-      }
+      });
+    } else {
+      html =
+        '<tr><td colspan="11" class="text-center">No hay productos disponibles</td></tr>';
+    }
 
-      document.getElementById("content_productos").innerHTML = html;
+    document.getElementById("content_productos").innerHTML = html;
 
-      // Generar códigos de barras después de cargar la tabla
+    // Generar códigos de barras después de cargar la tabla
+    if (productos.data) {
       productos.data.forEach((p) => {
         const barcodeId = "barcode-" + p.id;
-        JsBarcode("#" + barcodeId, p.codigo, {
-          format: "CODE128",
-          width: 1,
-          height: 30,
-          displayValue: false,
-        });
+        try {
+          JsBarcode("#" + barcodeId, p.codigo, {
+            format: "CODE128",
+            width: 1,
+            height: 30,
+            displayValue: false,
+          });
+        } catch (e) {
+          console.warn('JsBarcode error for product', p.id, e);
+        }
       });
-    } catch (error) {
-      console.error("Error al cargar productos:", error);
+    }
+  } catch (error) {
+    console.error("Error al cargar productos:", error);
+    if (document.getElementById("content_productos")) {
       document.getElementById("content_productos").innerHTML =
         '<tr><td colspan="11" class="text-center text-danger">Error al cargar productos</td></tr>';
     }
   }
+}
 
+// Mantener carga de tienda solo si existe el contenedor correspondiente
+if (document.getElementById("contenedor_productos")) {
   cargarProductosTienda();
 }
 

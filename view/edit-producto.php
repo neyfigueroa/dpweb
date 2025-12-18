@@ -2,7 +2,7 @@
 <div class="container-fluid">
     <div class="card">
         <h5 class="card-header"><i class="bi bi-pencil-square"></i> Actualizar Producto</h5>
-        <form id="frm_edit_produc">
+        <form id="frm_edit_produc" enctype="multipart/form-data">
             <input type="hidden" id="id_producto" name="id_producto">
             <div class="card-body">
                 <div class="row">
