@@ -130,32 +130,43 @@ class ProductoModel
     public function actualizarProducto($data)
     {
         error_log("Datos recibidos en modelo: " . print_r($data, true));
-        $stmt = $this->conexion->prepare("UPDATE producto SET codigo = ?, nombre = ?, detalle = ?, precio = ?, stock = ?, fecha_vencimiento = ?, imagen = ?, id_categoria = ?, id_proveedor = ? WHERE id = ?");
+        // Preparar variables (bind_param requiere variables, no expresiones)
+        $codigo = isset($data['codigo']) ? $data['codigo'] : null;
+        $nombre = isset($data['nombre']) ? $data['nombre'] : null;
+        $detalle = isset($data['detalle']) ? $data['detalle'] : null;
+        $precio = isset($data['precio']) ? $data['precio'] : null;
+        $stock = isset($data['stock']) ? (int)$data['stock'] : null;
+        $fecha_vencimiento = isset($data['fecha_vencimiento']) ? $data['fecha_vencimiento'] : null;
+        $imagen = isset($data['imagen']) ? $data['imagen'] : null;
+        $id_categoria = (isset($data['id_categoria']) && $data['id_categoria'] !== '') ? (int)$data['id_categoria'] : null;
+        $id_proveedor = (isset($data['id_proveedor']) && $data['id_proveedor'] !== '') ? (int)$data['id_proveedor'] : null;
+        $id_producto = isset($data['id_producto']) ? (int)$data['id_producto'] : null;
 
+        // Usar la columna correcta 'proveedor' en el UPDATE
+        $stmt = $this->conexion->prepare("UPDATE producto SET codigo = ?, nombre = ?, detalle = ?, precio = ?, stock = ?, fecha_vencimiento = ?, imagen = ?, id_categoria = ?, proveedor = ? WHERE id = ?");
         if ($stmt === false) {
             error_log("Error al preparar la consulta: " . $this->conexion->error);
             return false;
         }
 
-        $id_categoria = $data['id_categoria'] ? $data['id_categoria'] : NULL;
-        $id_proveedor = $data['id_proveedor'] ? (int)$data['id_proveedor'] : NULL;
+        // Tipos: s = string, d = double, i = integer
         $stmt->bind_param(
-            "ssssdssiii",
-            $data['codigo'],
-            $data['nombre'],
-            $data['detalle'],
-            $data['precio'],
-            $data['stock'],
-            $data['fecha_vencimiento'],
-            $data['imagen'],
+            "sssdissiii",
+            $codigo,
+            $nombre,
+            $detalle,
+            $precio,
+            $stock,
+            $fecha_vencimiento,
+            $imagen,
             $id_categoria,
             $id_proveedor,
-            $data['id_producto']
+            $id_producto
         );
 
         $resultado = $stmt->execute();
         if ($resultado === false) {
-            error_log("Error al ejecutar la consulta: " . $this->conexion->error);
+            error_log("Error al ejecutar la consulta: " . $stmt->error);
         }
         $stmt->close();
         return $resultado;
